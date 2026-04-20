@@ -111,7 +111,7 @@ Ishingiz natijasi sifatida siz quyida tavsiflangan ikkita virtual mashina obrazi
 
 **== Topshiriq ==**
 
-##### *Ubuntu Server 22.04 LTS* virtual mashinasini ko’taring.
+##### *Ubuntu Server 24.04 LTS* virtual mashinasini ko’taring.
 *Loyihaning oxirida virtual mashina obrazining dampini saqlash kerakligiga tayyor bo'ling.*
 
 ##### Virtual mashinaga **gitlab-runner** yuklab oling va o'rnating.**
@@ -176,7 +176,7 @@ Tuzishdan keyin olingan fayllar (artefaktlar) 30 kundan keyin o'chiriladigan ist
 
 **== Topshiriq ==**
 
-##### Ikkinchi *Ubuntu Server 22.04 LTS* virtual mashinasini ko’taring.
+##### Ikkinchi *Ubuntu Server 24.04 LTS* virtual mashinasini ko’taring.
 
 #### Loyihani boshqa virtual mashinaga "kengaytiradigan" **CD** uchun bosqich yozing.
 
