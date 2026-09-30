@@ -1,0 +1,4 @@
+Another file
+With some text
+And other lines
+End of file2
