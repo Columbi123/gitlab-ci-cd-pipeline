@@ -1,6 +1,6 @@
 stages:
   - build
-
+  - codestyle
 build:
   stage: build
   script:
@@ -24,3 +24,17 @@ build:
     paths:
       - src/artifacts/
     expire_in: 30 days
+
+codestyle:
+  stage: codestyle
+  script:
+    - echo "=== clang-format version ==="
+    - clang-format --version
+
+    - echo "=== Checking s21_cat ==="
+    - clang-format --dry-run --Werror --style=file src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat/*.c src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat/*.h
+
+    - echo "=== Checking s21_grep ==="
+    - clang-format --dry-run --Werror --style=file src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/*.c src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/*.h
+
+    - echo "=== Codestyle check passed ==="
