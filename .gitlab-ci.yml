@@ -3,6 +3,8 @@ stages:
 
 build:
   stage: build
+  tags:
+    - do6
   script:
     - echo "=== Building s21_cat ==="
     - cd "$CI_PROJECT_DIR/src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat"
