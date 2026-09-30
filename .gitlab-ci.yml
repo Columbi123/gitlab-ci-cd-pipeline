@@ -1,6 +1,7 @@
 stages:
   - build
   - codestyle
+  - integration_tests
 build:
   stage: build
   script:
@@ -38,3 +39,10 @@ codestyle:
     - clang-format --dry-run --Werror --style=file src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/*.c src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/*.h
 
     - echo "=== Codestyle check passed ==="
+  
+integration_tests:
+  stage: integration_tests
+  script:
+    - echo "=== Starting integration tests ==="
+    - chmod +x src/integration_tests.sh
+    - src/integration_tests.sh
