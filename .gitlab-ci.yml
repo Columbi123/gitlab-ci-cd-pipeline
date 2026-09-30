@@ -3,6 +3,7 @@ stages:
   - codestyle
   - integration_tests
   - deploy
+  - notify
 build:
   stage: build
   script:
@@ -58,3 +59,17 @@ deploy:
     - src/deploy.sh
   when: manual
   allow_failure: false
+
+notify_success:
+  stage: notify
+  script:
+    - chmod +x src/notify.sh
+    - src/notify.sh success
+  when: on_success
+
+notify_failure:
+  stage: notify
+  script:
+    - chmod +x src/notify.sh
+    - src/notify.sh failure
+  when: on_failure
