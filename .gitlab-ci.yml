@@ -2,6 +2,7 @@ stages:
   - build
   - codestyle
   - integration_tests
+  - deploy
 build:
   stage: build
   script:
@@ -46,3 +47,14 @@ integration_tests:
     - echo "=== Starting integration tests ==="
     - chmod +x src/integration_tests.sh
     - src/integration_tests.sh
+
+deploy:
+  stage: deploy
+  dependencies:
+    - build
+  script:
+    - echo "=== Starting deployment stage ==="
+    - chmod +x src/deploy.sh
+    - src/deploy.sh
+  when: manual
+  allow_failure: false
