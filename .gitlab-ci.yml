@@ -8,19 +8,19 @@ build:
   stage: build
   script:
     - echo "=== Building s21_cat ==="
-    - cd "$CI_PROJECT_DIR/src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat"
+    - cd "$CI_PROJECT_DIR/src/SimpleBashUtils/src/cat"
     - make clean
     - make
 
     - echo "=== Building s21_grep ==="
-    - cd "$CI_PROJECT_DIR/src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep"
+    - cd "$CI_PROJECT_DIR/src/SimpleBashUtils/src/grep"
     - make clean
     - make
 
     - echo "=== Preparing artifacts ==="
     - mkdir -p "$CI_PROJECT_DIR/src/artifacts"
-    - cp "$CI_PROJECT_DIR/src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat/s21_cat" "$CI_PROJECT_DIR/src/artifacts/"
-    - cp "$CI_PROJECT_DIR/src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/s21_grep" "$CI_PROJECT_DIR/src/artifacts/"
+    - cp "$CI_PROJECT_DIR/src/SimpleBashUtils/src/cat/s21_cat" "$CI_PROJECT_DIR/src/artifacts/"
+    - cp "$CI_PROJECT_DIR/src/SimpleBashUtils/src/grep/s21_grep" "$CI_PROJECT_DIR/src/artifacts/"
     - ls -lah "$CI_PROJECT_DIR/src/artifacts"
 
   artifacts:
@@ -35,10 +35,10 @@ codestyle:
     - clang-format --version
 
     - echo "=== Checking s21_cat ==="
-    - clang-format --dry-run --Werror --style=file src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat/*.c src/C2_SimpleBashUtils_ID_353513-1-develop/src/cat/*.h
+    - clang-format --dry-run --Werror --style=file src/SimpleBashUtils/src/cat/*.c src/SimpleBashUtils/src/cat/*.h
 
     - echo "=== Checking s21_grep ==="
-    - clang-format --dry-run --Werror --style=file src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/*.c src/C2_SimpleBashUtils_ID_353513-1-develop/src/grep/*.h
+    - clang-format --dry-run --Werror --style=file src/SimpleBashUtils/src/grep/*.c src/SimpleBashUtils/src/grep/*.h
 
     - echo "=== Codestyle check passed ==="
   

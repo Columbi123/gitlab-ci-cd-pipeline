@@ -2,7 +2,7 @@
 
 set -u
 
-BASE="$CI_PROJECT_DIR/src/C2_SimpleBashUtils_ID_353513-1-develop/src"
+BASE="$CI_PROJECT_DIR/src/SimpleBashUtils/src"
 CAT_BIN="$CI_PROJECT_DIR/src/artifacts/s21_cat"
 GREP_BIN="$CI_PROJECT_DIR/src/artifacts/s21_grep"
 
