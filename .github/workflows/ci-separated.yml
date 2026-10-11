@@ -1,0 +1,162 @@
+name: C Utilities CI/CD
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+    branches: [develop, master]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Request deployment (requires separately configured DEPLOY_ENABLED and SSH/CD steps)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build s21_cat and s21_grep
+        run: |
+          make -C src/SimpleBashUtils/src/cat clean
+          make -C src/SimpleBashUtils/src/cat
+          make -C src/SimpleBashUtils/src/grep clean
+          make -C src/SimpleBashUtils/src/grep
+          mkdir -p src/artifacts
+          cp src/SimpleBashUtils/src/cat/s21_cat src/artifacts/
+          cp src/SimpleBashUtils/src/grep/s21_grep src/artifacts/
+
+      - name: Upload compiled binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: s21-cat-grep
+          path: |
+            src/artifacts/s21_cat
+            src/artifacts/s21_grep
+          if-no-files-found: error
+          retention-days: 7
+
+  lint:
+    name: Lint (clang-format)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check C source formatting
+        run: |
+          clang-format --dry-run --Werror --style=file \
+            src/SimpleBashUtils/src/cat/*.c \
+            src/SimpleBashUtils/src/cat/*.h
+          clang-format --dry-run --Werror --style=file \
+            src/SimpleBashUtils/src/grep/*.c \
+            src/SimpleBashUtils/src/grep/*.h
+
+  test:
+    name: Integration tests
+    needs: [build, lint]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: s21-cat-grep
+          path: src/artifacts
+
+      - name: Make binaries executable
+        run: chmod +x src/artifacts/s21_cat src/artifacts/s21_grep
+
+      - name: Run integration tests
+        env:
+          CI_PROJECT_DIR: ${{ github.workspace }}
+        run: |
+          bash -n src/integration_tests.sh
+          bash src/integration_tests.sh
+
+  deploy:
+    name: Deploy (not configured yet)
+    needs: [build, lint, test]
+    # Remains skipped until you explicitly request deployment AND configure
+    # repository variable DEPLOY_ENABLED=true. Do not enable it until the
+    # fail-closed guard below is replaced with a secure deployment routine.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy == true && vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - name: Guard against unconfigured deployment
+        run: |
+          echo "::error::Deployment is not configured. Set up a reachable target, SSH keys/known_hosts, and a safe deploy script first."
+          exit 1
+
+  notify:
+    name: Notify / Run summary
+    needs: [build, lint, test, deploy]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Summarize pipeline results and optionally notify Telegram
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          ci_status="FAILED"
+          if [[ "$BUILD_RESULT" == "success" && "$LINT_RESULT" == "success" && "$TEST_RESULT" == "success" ]]; then
+            ci_status="PASSED"
+          fi
+
+          {
+            echo "## CI/CD run summary"
+            echo ""
+            echo "| Job | Result |"
+            echo "| --- | --- |"
+            echo "| Build | $BUILD_RESULT |"
+            echo "| Lint | $LINT_RESULT |"
+            echo "| Test | $TEST_RESULT |"
+            echo "| Deploy | $DEPLOY_RESULT (skipped = not requested/configured) |"
+            echo ""
+            echo "**CI result:** $ci_status"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+            echo "Telegram secrets are not configured; only the GitHub summary was produced."
+            exit 0
+          fi
+
+          message="CI: $ci_status
+          Build: $BUILD_RESULT
+          Lint: $LINT_RESULT
+          Test: $TEST_RESULT
+          Deploy: $DEPLOY_RESULT
+          Repository: $GITHUB_REPOSITORY
+          Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          curl --fail-with-body --silent --show-error --retry 2 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}"
