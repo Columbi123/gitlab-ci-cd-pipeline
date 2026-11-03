@@ -1,0 +1,75 @@
+stages:
+  - build
+  - codestyle
+  - integration_tests
+  - deploy
+  - notify
+build:
+  stage: build
+  script:
+    - echo "=== Building s21_cat ==="
+    - cd "$CI_PROJECT_DIR/src/SimpleBashUtils/src/cat"
+    - make clean
+    - make
+
+    - echo "=== Building s21_grep ==="
+    - cd "$CI_PROJECT_DIR/src/SimpleBashUtils/src/grep"
+    - make clean
+    - make
+
+    - echo "=== Preparing artifacts ==="
+    - mkdir -p "$CI_PROJECT_DIR/src/artifacts"
+    - cp "$CI_PROJECT_DIR/src/SimpleBashUtils/src/cat/s21_cat" "$CI_PROJECT_DIR/src/artifacts/"
+    - cp "$CI_PROJECT_DIR/src/SimpleBashUtils/src/grep/s21_grep" "$CI_PROJECT_DIR/src/artifacts/"
+    - ls -lah "$CI_PROJECT_DIR/src/artifacts"
+
+  artifacts:
+    paths:
+      - src/artifacts/
+    expire_in: 30 days
+
+codestyle:
+  stage: codestyle
+  script:
+    - echo "=== clang-format version ==="
+    - clang-format --version
+
+    - echo "=== Checking s21_cat ==="
+    - clang-format --dry-run --Werror --style=file src/SimpleBashUtils/src/cat/*.c src/SimpleBashUtils/src/cat/*.h
+
+    - echo "=== Checking s21_grep ==="
+    - clang-format --dry-run --Werror --style=file src/SimpleBashUtils/src/grep/*.c src/SimpleBashUtils/src/grep/*.h
+
+    - echo "=== Codestyle check passed ==="
+  
+integration_tests:
+  stage: integration_tests
+  script:
+    - echo "=== Starting integration tests ==="
+    - chmod +x src/integration_tests.sh
+    - src/integration_tests.sh
+
+deploy:
+  stage: deploy
+  dependencies:
+    - build
+  script:
+    - echo "=== Starting deployment stage ==="
+    - chmod +x src/deploy.sh
+    - src/deploy.sh
+  when: manual
+  allow_failure: false
+
+notify_success:
+  stage: notify
+  script:
+    - chmod +x src/notify.sh
+    - src/notify.sh success
+  when: on_success
+
+notify_failure:
+  stage: notify
+  script:
+    - chmod +x src/notify.sh
+    - src/notify.sh failure
+  when: on_failure

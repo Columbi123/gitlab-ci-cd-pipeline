@@ -1,0 +1,5 @@
+Hello world
+This is a test file
+Hello again
+Testing cat command
+hello world lowercase
