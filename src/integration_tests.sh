@@ -2,6 +2,8 @@
 
 set -u
 
+CI_PROJECT_DIR="${CI_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+
 BASE="$CI_PROJECT_DIR/src/SimpleBashUtils/src"
 CAT_BIN="$CI_PROJECT_DIR/src/artifacts/s21_cat"
 GREP_BIN="$CI_PROJECT_DIR/src/artifacts/s21_grep"

@@ -2,9 +2,11 @@
 
 set -euo pipefail
 
-PROD_USER="columbi"
-PROD_HOST="192.168.152.144"
+PROD_USER="${PROD_USER:?Set PROD_USER in CI variables}"
+PROD_HOST="${PROD_HOST:?Set PROD_HOST in CI variables}"
 REMOTE_TMP="/tmp/do6_deploy"
+
+CI_PROJECT_DIR="${CI_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 CAT_BIN="$CI_PROJECT_DIR/src/artifacts/s21_cat"
 GREP_BIN="$CI_PROJECT_DIR/src/artifacts/s21_grep"
